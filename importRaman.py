@@ -103,18 +103,20 @@ class Raman(tk.Frame):
         
         self.yScale = tk.Scale(self.mapFrame,orient='horizontal', from_=0, to=len(self.importedData[2])-1, resolution = 1, width = 15, length = 475, command=self.set_yvalue)
         self.yScale.grid(row = 2, column = 1)
-        self.exportMapButton = tk.Button(self.mapFrame, text='Export', command=self.save_file) #self.importFile
+        self.exportMapButton = tk.Button(self.mapFrame, text='Export', command=self.save_map) #self.importFile
         self.exportMapButton.grid(row = 3, column = 1)
         
         self.lambdaScale = tk.Scale(self.plotFrame,orient='horizontal', from_=0, to=1019, resolution = 1, width = 15, length = 475, command=self.set_value)
-        self.lambdaScale.grid(row = 2, column = 3)
+        self.lambdaScale.grid(row = 2, column = 1)
+        self.exportPlotButton = tk.Button(self.plotFrame, text='Export', command=self.save_plot) #self.importFile
+        self.exportPlotButton.grid(row = 3, column = 1)
     
         self.figureCanvas = FigureCanvasTkAgg(self.fig, master=self.mapFrame)
         self.figureCanvas.get_tk_widget().grid(row = 1, column = 1, columnspan = 1, rowspan = 1, sticky = tk.N, in_ = self.mapFrame)
         self.mapFrame.grid(row = 1, column = 1, columnspan = 1, rowspan = 1, sticky = tk.N, padx = 20, pady = 20, in_ = self)
         
         self.figureCanvas2 = FigureCanvasTkAgg(self.fig2, master=self.plotFrame)
-        self.figureCanvas2.get_tk_widget().grid(row = 1, column = 3, columnspan = 1, rowspan = 1, sticky = tk.N, in_ = self.plotFrame)
+        self.figureCanvas2.get_tk_widget().grid(row = 1, column = 1, columnspan = 1, rowspan = 1, sticky = tk.N, in_ = self.plotFrame)
         self.plotFrame.grid(row = 1, column = 2, columnspan = 1, rowspan = 1, sticky = tk.N, padx = 20, pady = 20, in_ = self)
     
     def set_value(self, val):
@@ -156,13 +158,22 @@ class Raman(tk.Frame):
                tkinter.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fname)
                return
 
-    def save_file(self):
+    def save_map(self):
         f = tkinter.filedialog.asksaveasfile(mode='w', defaultextension=".txt")
-        if f is None: # asksaveasfile return `None` if dialog closed with "cancel".
+        if f is None:
             return
-        text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.reshape(self.importedData[3][self.point.get()], (len(self.importedData[1]),len(self.importedData[2])))) # starts from `1.0`, not `0.0`
+        text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.reshape(self.importedData[3][self.point.get()], (len(self.importedData[1]),len(self.importedData[2]))))
         f.write(text2save)
-        f.close() # `()` was missing.
+        f.close()
+
+    def save_plot(self):
+        f = tkinter.filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        if f is None:
+            return
+        data = np.array([np.transpose(self.importedData[0]), np.transpose(self.importedData[3])[len(self.importedData[2])*self.xpoint.get()+self.ypoint.get()]])
+        text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.transpose(data))
+        f.write(text2save)
+        f.close()
 
 
 
