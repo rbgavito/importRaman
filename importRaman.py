@@ -68,6 +68,15 @@ class Raman(tk.Frame):
         
         self.logo = tk.PhotoImage(file='image.gif')
         
+        self.colormap = tk.StringVar()
+        self.colormap.set('spectral')
+        
+        self.mapLines = tk.BooleanVar()
+        self.mapLines.set(True)
+        
+        self.plotLines = tk.BooleanVar()
+        self.plotLines.set(True)
+        
         self.buttonsFrame = tk.Frame()
         self.imageCanvas = tk.Canvas(self.buttonsFrame, width = 200, height = 200)
         self.imageCanvas.create_image((100,100),image = self.logo)
@@ -90,10 +99,27 @@ class Raman(tk.Frame):
         filemenu.add_separator()
         filemenu.add_command(label = 'Exit', command = self.quit)
         
+        mapmenu = tk.Menu(self.menubar, tearoff = 0)
+        mapmenu.add_checkbutton(label = "Crosshair", variable = self.mapLines)
+        
+        cmapmenu = tk.Menu(mapmenu, tearoff = 0)
+        cmapmenu.add_radiobutton(label = 'Spectral', variable = self.colormap, value = 'spectral')
+        cmapmenu.add_radiobutton(label = 'Inferno', variable = self.colormap, value = 'inferno')
+        cmapmenu.add_radiobutton(label = 'Gray', variable = self.colormap, value = 'gray')
+        cmapmenu.add_radiobutton(label = 'Jet', variable = self.colormap, value = 'jet')
+        cmapmenu.add_radiobutton(label = 'Hot', variable = self.colormap, value = 'hot')
+        
+        mapmenu.add_cascade(label="Colormaps", menu=cmapmenu)
+        
+        plotmenu = tk.Menu(self.menubar, tearoff = 0)
+        plotmenu.add_checkbutton(label = "Vertical Line", variable = self.plotLines)
+        
         helpmenu = tk.Menu(self.menubar, tearoff = 0)
         helpmenu.add_command(label = 'About', command = self.about)
         
         self.menubar.add_cascade(label="File", menu=filemenu)
+        self.menubar.add_cascade(label="Map", menu=mapmenu)
+        self.menubar.add_cascade(label="Plot", menu=plotmenu)
         self.menubar.add_cascade(label="Help", menu=helpmenu)
         try:
             self.master.config(menu=self.menubar)
@@ -180,8 +206,8 @@ class Raman(tk.Frame):
         self.showMap(self.importedData[1],self.importedData[2],self.importedData[3],self.point.get(),self.importedData[0])
 
     def showMap(self, x, y, data, p, l):
-        graphics.showMap(self.figureCanvas, self.a, len(x), len(y), np.ones((len(y)))*self.xpoint.get(), np.ones((len(x)))*self.ypoint.get(), np.reshape(data[p], (len(x),len(y))) )
-        graphics.plotSpectrum(self.figureCanvas2, self.b, l, np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()], p)
+        graphics.showMap(self.figureCanvas, self.a, len(x), len(y), np.ones((len(y)))*self.xpoint.get(), np.ones((len(x)))*self.ypoint.get(), np.reshape(data[p], (len(x),len(y))), self.colormap.get(), self.mapLines.get() )
+        graphics.plotSpectrum(self.figureCanvas2, self.b, l, np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()], p, self.plotLines.get())
         plt.pause(0.001)
         self.update()
 
@@ -233,6 +259,7 @@ class Raman(tk.Frame):
         list = self.grid_slaves()
         for l in list:
             l.destroy()
+
 
 
 
