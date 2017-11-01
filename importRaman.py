@@ -1,3 +1,5 @@
+"""imports raman maps previously exported from l6m files"""
+
 import tkinter as tk
 import tkinter.filedialog
 import tkinter.messagebox
