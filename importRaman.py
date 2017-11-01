@@ -166,7 +166,7 @@ class Raman(tk.Frame):
         self.exportMapButton = tk.Button(self.mapFrame, text='Save map as...', command=self.saveas_map) #self.importFile
         self.exportMapButton.grid(row = 3, column = 1, sticky = tk.W)
         
-        self.lambdaScale = tk.Scale(self.plotFrame,orient='horizontal', from_=0, to=1019, resolution = 1, width = 15, length = 475, command=self.set_value)
+        self.lambdaScale = tk.Scale(self.plotFrame,orient='horizontal', from_=0, to=len(self.wn)-1, resolution = 1, width = 15, length = 475, command=self.set_value)
         self.lambdaScale.grid(row = 2, column = 0, columnspan = 2)
         self.exportPlotEntry = tk.Entry(self.plotFrame, textvariable = self.plotFileName)
         self.exportPlotEntry.grid(row = 3, column = 0, sticky = tk.E)
@@ -195,6 +195,7 @@ class Raman(tk.Frame):
     
     def importFile(self):
         self.importedData = importFile(self.filename.get())
+        self.wn = self.importedData[0]
         self.xpoint.set(len(self.importedData[1])-1)
         self.ypoint.set(len(self.importedData[2])-1)
         self.header.set(self.importedData[4])
