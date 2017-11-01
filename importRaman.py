@@ -51,6 +51,11 @@ class Raman(tk.Frame):
         self.header = tk.StringVar()
         self.header.set('')
 
+        self.plotFileName = tk.StringVar()
+        self.plotFileName.set('')
+        self.mapFileName = tk.StringVar()
+        self.mapFileName.set('')
+
         self.point = tk.IntVar()
         self.point.set(0)
         
@@ -100,24 +105,27 @@ class Raman(tk.Frame):
         
         self.xScale = tk.Scale(self.mapFrame ,orient='vertical', from_=0, to=len(self.importedData[1])-1, resolution = 1, width = 15, length = 475, command=self.set_xvalue)
         self.xScale.grid(row = 1, column = 2)
-        
         self.yScale = tk.Scale(self.mapFrame,orient='horizontal', from_=0, to=len(self.importedData[2])-1, resolution = 1, width = 15, length = 475, command=self.set_yvalue)
-        self.yScale.grid(row = 2, column = 1)
+        self.yScale.grid(row = 2, column = 0, columnspan = 3)
+        self.exportMapEntry = tk.Entry(self.mapFrame, textvariable = self.mapFileName)
+        self.exportMapEntry.grid(row = 3, column = 0, sticky = tk.E)
         self.exportMapButton = tk.Button(self.mapFrame, text='Export', command=self.save_map) #self.importFile
-        self.exportMapButton.grid(row = 3, column = 1)
+        self.exportMapButton.grid(row = 3, column = 1, sticky = tk.W)
         
         self.lambdaScale = tk.Scale(self.plotFrame,orient='horizontal', from_=0, to=1019, resolution = 1, width = 15, length = 475, command=self.set_value)
-        self.lambdaScale.grid(row = 2, column = 1)
+        self.lambdaScale.grid(row = 2, column = 0, columnspan = 2)
+        self.exportPlotEntry = tk.Entry(self.plotFrame, textvariable = self.plotFileName)
+        self.exportPlotEntry.grid(row = 3, column = 0, sticky = tk.E)
         self.exportPlotButton = tk.Button(self.plotFrame, text='Export', command=self.save_plot) #self.importFile
-        self.exportPlotButton.grid(row = 3, column = 1)
+        self.exportPlotButton.grid(row = 3, column = 1, sticky = tk.W)
     
         self.figureCanvas = FigureCanvasTkAgg(self.fig, master=self.mapFrame)
-        self.figureCanvas.get_tk_widget().grid(row = 1, column = 1, columnspan = 1, rowspan = 1, sticky = tk.N, in_ = self.mapFrame)
+        self.figureCanvas.get_tk_widget().grid(row = 1, column = 0, columnspan = 2, rowspan = 1, sticky = tk.N, in_ = self.mapFrame)
         self.mapFrame.grid(row = 1, column = 1, columnspan = 1, rowspan = 1, sticky = tk.N, padx = 20, pady = 20, in_ = self)
         
         self.figureCanvas2 = FigureCanvasTkAgg(self.fig2, master=self.plotFrame)
-        self.figureCanvas2.get_tk_widget().grid(row = 1, column = 1, columnspan = 1, rowspan = 1, sticky = tk.N, in_ = self.plotFrame)
-        self.plotFrame.grid(row = 1, column = 2, columnspan = 1, rowspan = 1, sticky = tk.N, padx = 20, pady = 20, in_ = self)
+        self.figureCanvas2.get_tk_widget().grid(row = 1, column = 0, columnspan = 2, rowspan = 1, sticky = tk.N, in_ = self.plotFrame)
+        self.plotFrame.grid(row = 1, column = 2, columnspan = 2, rowspan = 1, sticky = tk.N, padx = 20, pady = 20, in_ = self)
     
     def set_value(self, val):
         self.point.set(val)
@@ -139,6 +147,8 @@ class Raman(tk.Frame):
         self.createWidgets()
     
     def go(self):
+        self.mapFileName.set('slice-'+str(self.importedData[0][self.point.get()])+'cm-1.txt')
+        self.plotFileName.set('spectrum-'+str(self.xpoint.get())+'-'+str(self.ypoint.get())+'.txt')
         self.showMap(self.importedData[1],self.importedData[2],self.importedData[3],self.point.get(),self.importedData[0])
 
     def showMap(self, x, y, data, p, l):
@@ -159,7 +169,7 @@ class Raman(tk.Frame):
                return
 
     def save_map(self):
-        f = tkinter.filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        f = tkinter.filedialog.asksaveasfile(mode='w', initialfile = self.mapFileName.get(), defaultextension=".txt")
         if f is None:
             return
         text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.reshape(self.importedData[3][self.point.get()], (len(self.importedData[1]),len(self.importedData[2]))))
@@ -167,7 +177,7 @@ class Raman(tk.Frame):
         f.close()
 
     def save_plot(self):
-        f = tkinter.filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        f = tkinter.filedialog.asksaveasfile(mode='w', initialfile = self.plotFileName.get(), defaultextension='.txt')
         if f is None:
             return
         data = np.array([np.transpose(self.importedData[0]), np.transpose(self.importedData[3])[len(self.importedData[2])*self.xpoint.get()+self.ypoint.get()]])
