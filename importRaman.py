@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
 import matplotlib.pyplot as plt
+import graphics
 
 def importFile(fileName):
     header = ""
@@ -102,6 +103,8 @@ class Raman(tk.Frame):
         
         self.yScale = tk.Scale(self.mapFrame,orient='horizontal', from_=0, to=len(self.importedData[2])-1, resolution = 1, width = 15, length = 475, command=self.set_yvalue)
         self.yScale.grid(row = 2, column = 1)
+        self.exportMapButton = tk.Button(self.mapFrame, text='Export', command=self.save_file) #self.importFile
+        self.exportMapButton.grid(row = 3, column = 1)
         
         self.lambdaScale = tk.Scale(self.plotFrame,orient='horizontal', from_=0, to=1019, resolution = 1, width = 15, length = 475, command=self.set_value)
         self.lambdaScale.grid(row = 2, column = 3)
@@ -136,17 +139,9 @@ class Raman(tk.Frame):
     def go(self):
         self.showMap(self.importedData[1],self.importedData[2],self.importedData[3],self.point.get(),self.importedData[0])
 
-    def showMap(self, x, y, data,p, l):
-        self.a.cla()
-        self.a.imshow(np.reshape(data[p], (len(x),len(y))))
-        self.a.plot(range(0,len(y)),np.ones((len(y)))*self.xpoint.get(), color = 'red')
-        self.a.plot(np.ones((len(x)))*self.ypoint.get(),range(0,len(x)), color = 'red')
-        self.figureCanvas.show()
-        self.b.cla()
-        self.b.plot(l,np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()])
-        self.b.plot([l[self.point.get()], l[self.point.get()]], [0, 100 + max(np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()])])
-        self.b.axis([min(l), max(l), 0, 100 + max(np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()])])
-        self.figureCanvas2.show()
+    def showMap(self, x, y, data, p, l):
+        graphics.showMap(self.figureCanvas, self.a, len(x), len(y), np.ones((len(y)))*self.xpoint.get(), np.ones((len(x)))*self.ypoint.get(), np.reshape(data[p], (len(x),len(y))) )
+        graphics.plotSpectrum(self.figureCanvas2, self.b, l, np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()], p)
         plt.pause(0.001)
         self.update()
 
@@ -160,6 +155,14 @@ class Raman(tk.Frame):
            except:
                tkinter.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fname)
                return
+
+    def save_file(self):
+        f = tkinter.filedialog.asksaveasfile(mode='w', defaultextension=".txt")
+        if f is None: # asksaveasfile return `None` if dialog closed with "cancel".
+            return
+        text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.reshape(self.importedData[3][self.point.get()], (len(self.importedData[1]),len(self.importedData[2])))) # starts from `1.0`, not `0.0`
+        f.write(text2save)
+        f.close() # `()` was missing.
 
 
 
