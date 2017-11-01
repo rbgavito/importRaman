@@ -103,6 +103,8 @@ class Raman(tk.Frame):
 
     def createWidgets(self):
         
+        self.clear()
+        
         self.fig = plt.Figure(figsize=(5, 5), dpi=100)
         self.fig.suptitle("Raman Map")
         self.a = self.fig.add_subplot(111)
@@ -226,6 +228,11 @@ class Raman(tk.Frame):
 
     def about(self):
         tkinter.messagebox.showinfo("About", "Open and display LabSpec6 raman maps\nRBG\nLU - Physics\n2017")
+
+    def clear(self):
+        list = self.grid_slaves()
+        for l in list:
+            l.destroy()
 
 
 
