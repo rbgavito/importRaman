@@ -66,14 +66,40 @@ class Raman(tk.Frame):
         
         self.importedData = []
         
+        self.logo = tk.PhotoImage(file='image.gif')
+        
         self.buttonsFrame = tk.Frame()
-        self.filenameEntry = tk.Entry(textvariable = self.filename)
-        self.filenameEntry.grid(row = 0, column = 0, sticky = tk.W+tk.E, padx = 5, pady = 5, in_ = self.buttonsFrame)
-        self.importButton = tk.Button(self.buttonsFrame, text='Import', command=self.load_file) #self.importFile
-        self.importButton.grid(row = 0, column = 1)
+        self.imageCanvas = tk.Canvas(self.buttonsFrame, width = 200, height = 200)
+        self.imageCanvas.create_image((100,100),image = self.logo)
+        self.imageCanvas.grid(row = 0, column = 0, sticky = tk.W, in_ = self.buttonsFrame)
         self.buttonsFrame.grid(row = 0, column = 0, in_ = self)
         
+        self.createMenu()
+        
         self.grid()
+    
+    def createMenu(self):
+        self.menubar = tk.Menu(self.master)
+        
+        filemenu = tk.Menu(self.menubar, tearoff = 0)
+        filemenu.add_command(label = 'Open File', command = self.load_file)
+        filemenu.add_command(label = 'Save Map', command = self.save_map)
+        filemenu.add_command(label = 'Save Map As...', command = self.saveas_map)
+        filemenu.add_command(label = 'Save Spectrum', command = self.save_plot)
+        filemenu.add_command(label = 'Save Spectrum As...', command = self.saveas_plot)
+        filemenu.add_separator()
+        filemenu.add_command(label = 'Exit', command = self.quit)
+        
+        helpmenu = tk.Menu(self.menubar, tearoff = 0)
+        helpmenu.add_command(label = 'About', command = self.about)
+        
+        self.menubar.add_cascade(label="File", menu=filemenu)
+        self.menubar.add_cascade(label="Help", menu=helpmenu)
+        try:
+            self.master.config(menu=self.menubar)
+        except AttributeError:
+            # master is a toplevel window (Python 1.4/Tkinter 1.63)
+            self.master.tk.call(master, "config", "-menu", self.menubar)
 
     def createWidgets(self):
         
@@ -109,14 +135,14 @@ class Raman(tk.Frame):
         self.yScale.grid(row = 2, column = 0, columnspan = 3)
         self.exportMapEntry = tk.Entry(self.mapFrame, textvariable = self.mapFileName)
         self.exportMapEntry.grid(row = 3, column = 0, sticky = tk.E)
-        self.exportMapButton = tk.Button(self.mapFrame, text='Export', command=self.save_map) #self.importFile
+        self.exportMapButton = tk.Button(self.mapFrame, text='Save map as...', command=self.saveas_map) #self.importFile
         self.exportMapButton.grid(row = 3, column = 1, sticky = tk.W)
         
         self.lambdaScale = tk.Scale(self.plotFrame,orient='horizontal', from_=0, to=1019, resolution = 1, width = 15, length = 475, command=self.set_value)
         self.lambdaScale.grid(row = 2, column = 0, columnspan = 2)
         self.exportPlotEntry = tk.Entry(self.plotFrame, textvariable = self.plotFileName)
         self.exportPlotEntry.grid(row = 3, column = 0, sticky = tk.E)
-        self.exportPlotButton = tk.Button(self.plotFrame, text='Export', command=self.save_plot) #self.importFile
+        self.exportPlotButton = tk.Button(self.plotFrame, text='Save spectrum as...', command=self.saveas_plot) #self.importFile
         self.exportPlotButton.grid(row = 3, column = 1, sticky = tk.W)
     
         self.figureCanvas = FigureCanvasTkAgg(self.fig, master=self.mapFrame)
@@ -168,7 +194,7 @@ class Raman(tk.Frame):
                tkinter.messagebox.showerror("Open Source File", "Failed to read file\n'%s'" % fname)
                return
 
-    def save_map(self):
+    def saveas_map(self):
         f = tkinter.filedialog.asksaveasfile(mode='w', initialfile = self.mapFileName.get(), defaultextension=".txt")
         if f is None:
             return
@@ -176,7 +202,7 @@ class Raman(tk.Frame):
         f.write(text2save)
         f.close()
 
-    def save_plot(self):
+    def saveas_plot(self):
         f = tkinter.filedialog.asksaveasfile(mode='w', initialfile = self.plotFileName.get(), defaultextension='.txt')
         if f is None:
             return
@@ -184,6 +210,23 @@ class Raman(tk.Frame):
         text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.transpose(data))
         f.write(text2save)
         f.close()
+
+    def save_map(self):
+        with open(self.mapFileName.get(), 'w', encoding = 'latin') as f:
+            text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.reshape(self.importedData[3][self.point.get()], (len(self.importedData[1]),len(self.importedData[2]))))
+            f.write(text2save)
+            f.close()
+
+    def save_plot(self):
+        with open(self.plotFileName.get(), 'w', encoding = 'latin') as f:
+            data = np.array([np.transpose(self.importedData[0]), np.transpose(self.importedData[3])[len(self.importedData[2])*self.xpoint.get()+self.ypoint.get()]])
+            text2save = '\n'.join('\t'.join('%d' %x for x in y) for y in np.transpose(data))
+            f.write(text2save)
+            f.close()
+
+    def about(self):
+        tkinter.messagebox.showinfo("About", "Open and display LabSpec6 raman maps\nRBG\nLU - Physics\n2017")
+
 
 
 
