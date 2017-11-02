@@ -77,6 +77,9 @@ class Raman(tk.Frame):
         self.plotLines = tk.BooleanVar()
         self.plotLines.set(True)
         
+        self.wavelength = tk.BooleanVar()
+        self.wavelength.set(False)
+        
         self.buttonsFrame = tk.Frame()
         self.imageCanvas = tk.Canvas(self.buttonsFrame, width = 200, height = 200)
         self.imageCanvas.create_image((100,100),image = self.logo)
@@ -113,6 +116,7 @@ class Raman(tk.Frame):
         
         plotmenu = tk.Menu(self.menubar, tearoff = 0)
         plotmenu.add_checkbutton(label = "Vertical Line", variable = self.plotLines)
+        plotmenu.add_checkbutton(label = "Wavelength (nm)", variable = self.wavelength)
         
         helpmenu = tk.Menu(self.menubar, tearoff = 0)
         helpmenu.add_command(label = 'About', command = self.about)
@@ -208,7 +212,7 @@ class Raman(tk.Frame):
 
     def showMap(self, x, y, data, p, l):
         graphics.showMap(self.figureCanvas, self.a, len(x), len(y), np.ones((len(y)))*self.xpoint.get(), np.ones((len(x)))*self.ypoint.get(), np.reshape(data[p], (len(x),len(y))), self.colormap.get(), self.mapLines.get() )
-        graphics.plotSpectrum(self.figureCanvas2, self.b, l, np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()], p, self.plotLines.get())
+        graphics.plotSpectrum(self.figureCanvas2, self.b, l, np.transpose(data)[len(y)*self.xpoint.get()+self.ypoint.get()], p, self.plotLines.get(), self.wavelength.get())
         plt.pause(0.001)
         self.update()
 
